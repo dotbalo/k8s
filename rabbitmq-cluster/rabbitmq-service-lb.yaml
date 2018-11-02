@@ -1,0 +1,21 @@
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    app: rmq-cluster
+    type: LoadBalancer
+  name: rmq-cluster-balancer
+  namespace: public-service
+spec:
+  ports:
+  - name: http
+    port: 15672
+    protocol: TCP
+    targetPort: 15672
+  - name: amqp
+    port: 5672
+    protocol: TCP
+    targetPort: 5672
+  selector:
+    app: rmq-cluster
+  type: NodePort
