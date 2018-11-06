@@ -24,10 +24,10 @@ spec:
         - sh
         image: redis
         imagePullPolicy: IfNotPresent
-        name: redis
+        name: redis-slave
         ports:
         - containerPort: 6379
-          name: redis-port
+          name: redis-slave-port
           protocol: TCP
         volumeMounts:
         - mountPath: /mnt/

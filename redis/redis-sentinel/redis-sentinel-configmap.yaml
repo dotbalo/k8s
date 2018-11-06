@@ -101,3 +101,10 @@ data:
       client-output-buffer-limit pubsub 64mb 16mb 60
       hz 10
       aof-rewrite-incremental-fsync yes
+    redis-sentinel.conf: |
+      port 26379
+      dir /data
+      sentinel monitor mymaster redis-sentinel-master-ss-0.redis-sentinel-master-ss.public-service.svc.cluster.local 6379 2
+      sentinel down-after-milliseconds mymaster 30000
+      sentinel parallel-syncs mymaster 1
+      sentinel failover-timeout mymaster 180000

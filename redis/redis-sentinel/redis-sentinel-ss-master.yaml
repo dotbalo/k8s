@@ -15,7 +15,7 @@ spec:
     metadata:
       labels:
         app: redis-sentinel-master-ss
-    spec:
+    pec:
       containers:
       - args:
         - -c
@@ -24,10 +24,10 @@ spec:
         - sh
         image: redis
         imagePullPolicy: IfNotPresent
-        name: redis
+        name: redis-master
         ports:
         - containerPort: 6379
-          name: redis-port
+          name: redis-master-port
           protocol: TCP
         volumeMounts:
         - mountPath: /mnt/

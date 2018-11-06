@@ -1,0 +1,44 @@
+kind: StatefulSet
+apiVersion: apps/v1beta1
+metadata:
+  labels:
+    app: redis-sentinel-sentinel-ss
+  name: redis-sentinel-sentinel-ss
+  namespace: public-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: redis-sentinel-sentinel-ss
+  serviceName: redis-sentinel-sentinel-ss
+  template:
+    metadata:
+      labels:
+        app: redis-sentinel-sentinel-ss
+    spec:
+      containers:
+      - args:
+        - -c
+        - cp /mnt/redis-sentinel.conf /data/ ; redis-sentinel /data/redis-sentinel.conf
+        command:
+        - sh
+        image: redis
+        imagePullPolicy: IfNotPresent
+        name: redis-sentinel
+        ports:
+        - containerPort: 26379
+          name: sentinel-port
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /mnt/
+          name: config-volume
+          readOnly: false
+      serviceAccountName: redis-sentinel
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          items:
+          - key: redis-sentinel.conf
+            path: redis-sentinel.conf
+          name: redis-sentinel-config 
+        name: config-volume
