@@ -1,0 +1,15 @@
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    app: redis-sentinel-master-ss
+  name: redis-sentinel-master-ss
+  namespace: public-service
+spec:
+  clusterIP: None
+  ports:
+  - name: redis
+    port: 6379
+    targetPort: 6379
+  selector:
+    app: redis-sentinel-master-ss

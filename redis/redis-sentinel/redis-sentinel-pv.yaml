@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-redis-sentinel-0
+spec:
+  capacity:
+    storage: 4Gi
+  accessModes:
+    - ReadWriteMany
+  volumeMode: Filesystem
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: "redis-sentinel-storage-class"
+  nfs:
+    # real share directory
+    path: /k8s/redis-sentinel/0
+    # nfs real ip
+    server: 192.168.2.2
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-redis-sentinel-1
+spec:
+  capacity:
+    storage: 4Gi
+  accessModes:
+    - ReadWriteMany
+  volumeMode: Filesystem
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: "redis-sentinel-storage-class"
+  nfs:
+    # real share directory
+    path: /k8s/redis-sentinel/1
+    # nfs real ip
+    server: 192.168.2.2
+
+---
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-redis-sentinel-2
+spec:
+  capacity:
+    storage: 4Gi
+  accessModes:
+    - ReadWriteMany
+  volumeMode: Filesystem
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: "redis-sentinel-storage-class"
+  nfs:
+    # real share directory
+    path: /k8s/redis-sentinel/2
+    # nfs real ip
+    server: 192.168.2.2
