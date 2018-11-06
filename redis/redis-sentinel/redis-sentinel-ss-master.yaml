@@ -15,11 +15,11 @@ spec:
     metadata:
       labels:
         app: redis-sentinel-master-ss
-    pec:
+    spec:
       containers:
       - args:
         - -c
-        - redis-server /mnt/redis-master.conf
+        - cp /mnt/redis-master.conf /data/ ; redis-server /data/redis-master.conf
         command:
         - sh
         image: redis
@@ -27,7 +27,7 @@ spec:
         name: redis-master
         ports:
         - containerPort: 6379
-          name: redis-master-port
+          name: masterport
           protocol: TCP
         volumeMounts:
         - mountPath: /mnt/

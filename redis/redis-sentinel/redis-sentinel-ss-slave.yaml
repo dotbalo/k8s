@@ -19,7 +19,7 @@ spec:
       containers:
       - args:
         - -c
-        - redis-server /mnt/redis-slave.conf
+        - cp /mnt/redis-slave.conf /data/ ; redis-server /data/redis-slave.conf
         command:
         - sh
         image: redis
@@ -27,7 +27,7 @@ spec:
         name: redis-slave
         ports:
         - containerPort: 6379
-          name: redis-slave-port
+          name: slaveport
           protocol: TCP
         volumeMounts:
         - mountPath: /mnt/

@@ -22,7 +22,6 @@ data:
       dbfilename dump.rdb
       dir /data/
       slave-serve-stale-data yes
-      slave-read-only yes
       repl-diskless-sync no
       repl-diskless-sync-delay 5
       repl-disable-tcp-nodelay no
