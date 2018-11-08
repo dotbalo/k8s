@@ -1,0 +1,57 @@
+kind: StatefulSet
+apiVersion: apps/v1beta1
+metadata:
+  labels:
+    app: redis-cluster-ss
+  name: redis-cluster-ss
+  namespace: public-service
+spec:
+  replicas: 6
+  selector:
+    matchLabels:
+      app: redis-cluster-ss
+  serviceName: redis-cluster-ss
+  template:
+    metadata:
+      labels:
+        app: redis-cluster-ss
+    spec:
+      containers:
+      - args:
+        - -c
+        - cp /mnt/redis-cluster.conf /data ; redis-server /data/redis-cluster.conf
+        command:
+        - sh
+        image: dotbalo/redis-trib:4.0.10
+        imagePullPolicy: IfNotPresent
+        name: redis-cluster
+        ports:
+        - containerPort: 6379
+          name: masterport
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /mnt/
+          name: config-volume
+          readOnly: false
+        - mountPath: /data/
+          name: redis-cluster-storage
+          readOnly: false
+      serviceAccountName: redis-cluster
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          items:
+          - key: redis-cluster.conf
+            path: redis-cluster.conf
+          name: redis-cluster-config 
+        name: config-volume
+  volumeClaimTemplates:
+  - metadata:
+      name: redis-cluster-storage
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      storageClassName: "redis-cluster-storage-class"
+      resources:
+        requests:
+          storage: 1Gi

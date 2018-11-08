@@ -1,0 +1,119 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-redis-cluster-1
+  namespace: public-service
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: "redis-cluster-storage-class"
+  nfs:
+    # real share directory
+    path: /k8s/redis-cluster/1
+    # nfs real ip
+    server: 192.168.2.2
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-redis-cluster-2
+  namespace: public-service
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: "redis-cluster-storage-class"
+  nfs:
+    # real share directory
+    path: /k8s/redis-cluster/2
+    # nfs real ip
+    server: 192.168.2.2
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-redis-cluster-3
+  namespace: public-service
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: "redis-cluster-storage-class"
+  nfs:
+    # real share directory
+    path: /k8s/redis-cluster/3
+    # nfs real ip
+    server: 192.168.2.2
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-redis-cluster-4
+  namespace: public-service
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: "redis-cluster-storage-class"
+  nfs:
+    # real share directory
+    path: /k8s/redis-cluster/4
+    # nfs real ip
+    server: 192.168.2.2
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-redis-cluster-5
+  namespace: public-service
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: "redis-cluster-storage-class"
+  nfs:
+    # real share directory
+    path: /k8s/redis-cluster/5
+    # nfs real ip
+    server: 192.168.2.2
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-redis-cluster-6
+  namespace: public-service
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: "redis-cluster-storage-class"
+  nfs:
+    # real share directory
+    path: /k8s/redis-cluster/6
+    # nfs real ip
+    server: 192.168.2.2
+

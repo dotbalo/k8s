@@ -1,0 +1,17 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: redis-cluster-config
+  namespace: public-service
+  labels:
+    addonmanager.kubernetes.io/mode: Reconcile
+data:
+    redis-cluster.conf: |
+      # 节点端口
+      port 6379
+      # #  开启集群模式
+      cluster-enabled yes
+      # #  节点超时时间，单位毫秒
+      cluster-node-timeout 15000
+      # #  集群内部配置文件
+      cluster-config-file "nodes.conf"
