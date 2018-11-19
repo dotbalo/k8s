@@ -1,0 +1,33 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  namespace: public-service
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: phpldapadmin
+  name: phpldapadmin
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: phpldapadmin
+    spec:
+      containers:
+      - env:
+        - name: PHPLDAPADMIN_HTTPS
+          value: "false"
+        - name: PHPLDAPADMIN_LDAP_HOSTS
+          value: ldap-service
+        image: osixia/phpldapadmin:0.7.1
+        name: phpldapadmin
+        ports:
+        - containerPort: 80
+        resources: {}
+      restartPolicy: Always
+status: {}

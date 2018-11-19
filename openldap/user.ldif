@@ -1,0 +1,12 @@
+objectClass: inetOrgPerson
+objectClass: mailAccount
+objectClass: organizationalPerson
+objectClass: person
+objectClass: simpleSecurityObject
+objectClass: top
+objectClass: uidObject
+cn: user
+mail: demo@mail.com
+sn: surname
+uid: ldap_login
+userPassword: {SSHA}x
