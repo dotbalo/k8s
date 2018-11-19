@@ -3,10 +3,17 @@ kind: Service
 metadata:
   namespace: public-service
   labels:
-    app: openldap
+    app: ldap
   name: ldap-service
 spec:
   ports:
-    - port: 389
+    - name: openldap
+      protocol: TCP
+      port: 389
+      targetPort: openldap
+    - name: ssl-ldap-port
+      protocol: TCP
+      port: 636
+      targetPort: ssl-ldap-port
   selector:
-    app: openldap
+    app: ldap
