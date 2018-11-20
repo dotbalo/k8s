@@ -24,7 +24,7 @@ spec:
           value: "false"
         - name: PHPLDAPADMIN_LDAP_HOSTS
           value: ldap-service
-        image: osixia/phpldapadmin:0.7.1
+        image: dotbalo/lam
         name: phpldapadmin
         ports:
         - containerPort: 80
