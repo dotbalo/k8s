@@ -1,0 +1,11 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: gitlab-gitlab
+  namespace: public-service
+spec:
+  accessModes: [ "ReadWriteMany" ]
+  storageClassName: "gluster-heketi"
+  resources:
+    requests:
+      storage: 5Gi
