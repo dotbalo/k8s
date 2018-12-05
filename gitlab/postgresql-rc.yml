@@ -63,7 +63,7 @@ metadata:
   namespace: public-service
 spec:
   accessModes: [ "ReadWriteMany" ]
-  storageClassName: "gluster-heketi"
+  storageClassName: "gitlab-pg-data"
   resources:
     requests:
       storage: 5Gi
