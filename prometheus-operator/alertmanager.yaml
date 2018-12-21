@@ -1,0 +1,91 @@
+# global块配置下的配置选项在本配置文件内的所有配置项下可见
+global:
+  # 在Alertmanager内管理的每一条告警均有两种状态: "resolved"或者"firing". 在altermanager首次发送告警通知后, 该告警会一直处于firing状态,设置resolve_timeout可以指定处于firing状态的告警间隔多长时间会被设置为resolved状态, 在设置为resolved状态的告警后,altermanager不会再发送firing的告警通知.
+  resolve_timeout: 1h
+
+  # 邮件告警配置
+  smtp_smarthost: 'smtp.exmail.qq.com:25'
+  smtp_from: 'dukuan@xxx.com'
+  smtp_auth_username: 'dukuan@xxx.com'
+  smtp_auth_password: 'DKhxlc2018,./!@#'
+  # HipChat告警配置
+  # hipchat_auth_token: '123456789'
+  # hipchat_auth_url: 'https://hipchat.foobar.org/'
+
+  # 告警通知模板
+templates:
+- '/etc/altermanager/config/*.tmpl'
+
+# route: 根路由,该模块用于该根路由下的节点及子路由routes的定义. 子树节点如果不对相关配置进行配置，则默认会从父路由树继承该配置选项。每一条告警都要进入route，即要求配置选项group_by的值能够匹配到每一条告警的至少一个labelkey(即通过POST请求向altermanager服务接口所发送告警的labels项所携带的<labelname>)，告警进入到route后，将会根据子路由routes节点中的配置项match_re或者match来确定能进入该子路由节点的告警(由在match_re或者match下配置的labelkey: labelvalue是否为告警labels的子集决定，是的话则会进入该子路由节点，否则不能接收进入该子路由节点).
+route:
+  # 例如所有labelkey:labelvalue含cluster=A及altertname=LatencyHigh labelkey的告警都会被归入单一组中
+  group_by: ['job', 'altername', 'cluster', 'service','severity']
+  # 若一组新的告警产生，则会等group_wait后再发送通知，该功能主要用于当告警在很短时间内接连产生时，在group_wait内合并为单一的告警后再发送
+  group_wait: 30s
+  # 再次告警时间间隔
+  group_interval: 5m
+  # 如果一条告警通知已成功发送，且在间隔repeat_interval后，该告警仍然未被设置为resolved，则会再次发送该告警通知
+  repeat_interval: 12h
+  # 默认告警通知接收者，凡未被匹配进入各子路由节点的告警均被发送到此接收者
+  receiver: 'team-ops-mails'
+  # 上述route的配置会被传递给子路由节点，子路由节点进行重新配置才会被覆盖
+
+  # 子路由树
+  routes:
+  # 该配置选项使用正则表达式来匹配告警的labels，以确定能否进入该子路由树
+  # match_re和match均用于匹配labelkey为service,labelvalue分别为指定值的告警，被匹配到的告警会将通知发送到对应的receiver
+  - match_re:
+      service: ^(foo1|foo2|baz)$
+    receiver: 'team-ops-mails'
+    # 在带有service标签的告警同时有severity标签时，他可以有自己的子路由，同时具有severity != critical的告警则被发送给接收者team-ops-mails,对severity == critical的告警则被发送到对应的接收者即team-ops-pager
+    routes:
+    - match:
+        severity: critical
+      receiver: 'team-ops-mails'
+  # 比如关于数据库服务的告警，如果子路由没有匹配到相应的owner标签，则都默认由team-DB-pager接收
+  - match:
+      service: database
+    receiver: 'team-ops-mails'
+  # 我们也可以先根据标签service:database将数据库服务告警过滤出来，然后进一步将所有同时带labelkey为database
+  - match:
+      severity: critical
+    receiver: 'team-ops-mails'
+# 抑制规则，当出现critical告警时 忽略warning
+inhibit_rules:
+- source_match:
+    severity: 'critical'
+  target_match:
+    severity: 'warning'
+  # Apply inhibition if the alertname is the same.
+  #   equal: ['alertname', 'cluster', 'service']
+  #
+# 收件人配置
+receivers:
+- name: 'team-ops-mails'
+  email_configs:
+  - to: 'dukuan@xxx.com'
+
+#- name: 'team-X-pager'
+#  email_configs:
+#  - to: 'team-X+alerts-critical@example.org'
+#  pagerduty_configs:
+#  - service_key: <team-X-key>
+#
+#- name: 'team-Y-mails'
+#  email_configs:
+#  - to: 'team-Y+alerts@example.org'
+#
+#- name: 'team-Y-pager'
+#  pagerduty_configs:
+#  - service_key: <team-Y-key>
+#
+#- name: 'team-DB-pager'
+#  pagerduty_configs:
+#  - service_key: <team-DB-key>
+#  
+#- name: 'team-X-hipchat'
+#  hipchat_configs:
+#  - auth_token: <auth_token>
+#    room_id: 85
+#    message_format: html
+#    notify: true 
