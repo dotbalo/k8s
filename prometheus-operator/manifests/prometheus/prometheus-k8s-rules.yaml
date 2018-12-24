@@ -643,3 +643,33 @@ data:
         annotations:
           description: "{{$labels.namespace}}/{{$labels.pod}} has many samples rejected due to duplicate timestamps but different values"
           summary: Prometheus has many samples rejected
+
+  noah_pod.rules.yaml: |+
+    groups:
+    - name: noah_pod.rules
+      rules:
+      - alert: Pod_all_cpu_usage
+        expr: (sum by(name)(rate(container_cpu_usage_seconds_total{image!=""}[5m]))*100) > 10
+        for: 5m
+        labels:
+          severity: critical
+          service: pods
+        annotations:
+          description: 容器 {{ $labels.name }} CPU 资源利用率大于 75% , (current value is {{ $value }})
+          summary: Dev CPU 负载告警
+      - alert: Pod_all_memory_usage
+        expr: sort_desc(avg by(name)(irate(container_memory_usage_bytes{name!=""}[5m]))*100) > 1024*10^3*2
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          description: 容器 {{ $labels.name }} Memory 资源利用率大于 2G , (current value is {{ $value }})
+          summary: Dev Memory 负载告警
+      - alert: Pod_all_network_receive_usage
+        expr: sum by (name)(irate(container_network_receive_bytes_total{container_name="POD"}[1m])) > 1024*1024*50
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          description: 容器 {{ $labels.name }} network_receive 资源利用率大于 50M , (current value is {{ $value }})
+          summary: network_receive 负载告警
