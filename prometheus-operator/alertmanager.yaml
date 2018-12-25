@@ -7,7 +7,7 @@ global:
   smtp_smarthost: 'smtp.exmail.qq.com:25'
   smtp_from: 'dukuan@xxx.com'
   smtp_auth_username: 'dukuan@xxx.com'
-  smtp_auth_password: 'DKhxlc2018,./!@#'
+  smtp_auth_password: 'DKxxxxZ'
   # HipChat告警配置
   # hipchat_auth_token: '123456789'
   # hipchat_auth_url: 'https://hipchat.foobar.org/'
