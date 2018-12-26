@@ -12,7 +12,7 @@ if [ -z "${NAMESPACE}" ]; then
 fi
 
 kubectl create namespace "$NAMESPACE"
-
+#kubectl create -f bundle.yaml
 kubectl create secret generic  alertmanager-main --from-file=alertmanager.yaml --from-file=mail-template.tmpl -n monitoring
 
 kubectl -n monitoring create secret generic etcd-certs --from-file=/etc/kubernetes/pki/etcd/peer.crt   --from-file=/etc/kubernetes/pki/etcd/peer.key  --from-file=/etc/kubernetes/pki/etcd/ca.crt

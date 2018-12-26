@@ -28,3 +28,6 @@ sleep 5
 
 kctl delete -f manifests/prometheus-operator
 
+kubectl delete secret  alertmanager-main -n monitoring
+kubectl delete -f manifests/prometheus/prometheus-etcd.yaml -n monitoring
+kubectl -n monitoring delete secret  etcd-certs
