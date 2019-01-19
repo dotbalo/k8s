@@ -1,0 +1,15 @@
+name: nginx-ingress
+version: 0.2.0
+appVersion: 1.4.3
+description: NGINX Ingress Controller
+sources:
+  - https://github.com/nginxinc/kubernetes-ingress/tree/master/deployment/helm-chart
+keywords:
+  - ingress
+  - nginx
+maintainers:
+  - name: Damian Curry
+    email: damian.curry@nginx.com
+  - name: Dean Coakley
+    email: dean.coakley@nginx.com
+

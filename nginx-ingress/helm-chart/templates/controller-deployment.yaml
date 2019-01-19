@@ -1,0 +1,90 @@
+{{- if eq .Values.controller.kind "deployment" }}
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ .Values.controller.name | trunc 63 }}
+  labels:
+    app: {{ .Values.controller.name | trunc 63 }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.controller.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.controller.name | trunc 63 }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.controller.name | trunc 63 }}
+{{- if .Values.prometheus.create }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "{{ .Values.prometheus.port }}"
+{{- end }}
+    spec:
+      serviceAccountName: {{ .Values.controller.serviceAccount.name }}
+      hostNetwork: {{ .Values.controller.hostNetwork }}
+      containers:
+      - image: "{{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag }}"
+        name: {{ .Values.controller.name | trunc 63 }}
+        imagePullPolicy: "{{ .Values.controller.image.pullPolicy }}"
+        ports:
+        - name: http
+          containerPort: 80
+        - name: https
+          containerPort: 443
+        env:
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        args:
+          - -nginx-plus={{ .Values.controller.nginxplus }}
+          - -nginx-configmaps=$(POD_NAMESPACE)/nginx-config
+{{- if .Values.controller.defaultTLS.secret }}
+          - -default-server-tls-secret={{ .Values.controller.defaultTLS.secret }}
+{{ else }}
+          - -default-server-tls-secret=$(POD_NAMESPACE)/default-server-secret
+{{- end }}
+          - -ingress-class={{ .Values.controller.ingressClass }}
+          - -use-ingress-class-only={{ .Values.controller.useIngressClassOnly }}
+{{- if .Values.controller.watchNamespace }}
+          - -watch-namespace={{ .Values.controller.watchNamespace }}
+{{- end }}
+          - -health-status={{ .Values.controller.healthStatus }}
+          - -nginx-debug={{ .Values.controller.nginxDebug }}
+          - -nginx-status={{ .Values.controller.nginxStatus.enable }}
+{{- if .Values.controller.nginxStatus.enable }}
+          - -nginx-status-port={{ .Values.controller.nginxStatus.port }}
+          - -nginx-status-allow-cidrs={{ .Values.controller.nginxStatus.allowCidrs }}
+{{- end }}
+{{- if .Values.controller.reportIngressStatus.enable }}
+          - -report-ingress-status
+          - -external-service={{ .Values.controller.reportIngressStatus.externalService }}
+          - -enable-leader-election={{ .Values.controller.reportIngressStatus.enableLeaderElection }}
+{{- end }}
+{{- if and .Values.prometheus.create .Values.controller.nginxStatus.enable }}
+      - image: "{{ .Values.prometheus.image.repository }}:{{ .Values.prometheus.image.tag }}"
+        name: nginx-prometheus-exporter
+        imagePullPolicy: "{{ .Values.prometheus.image.pullPolicy }}"
+        ports:
+        - name: prometheus
+          containerPort: {{ .Values.prometheus.port }}
+        args:
+          - -web.listen-address
+          - :{{ .Values.prometheus.port }}
+{{- if .Values.controller.nginxplus }}
+          - -nginx.plus
+          - -nginx.scrape-uri
+          - http://127.0.0.1:{{ .Values.controller.nginxStatus.port }}/api
+{{ else }}
+          - -nginx.scrape-uri
+          - http://127.0.0.1:{{ .Values.controller.nginxStatus.port }}/stub_status
+{{- end }}
+{{- end }}
+{{- end }}

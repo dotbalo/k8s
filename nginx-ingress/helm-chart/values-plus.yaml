@@ -1,0 +1,5 @@
+controller:
+  nginxplus: true
+  image:
+    repository: nginx-plus-ingress
+    tag: "1.4.3"

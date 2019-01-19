@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: nginx-ingress
+  labels:
+    k8s-app: nginx-ingress
+    component: nginx-ingress
+    heritage: Tiller
+    prometheus: kube-prometheus
+    release: kube-prometheus
+spec:
+  jobLabel: component
+  endpoints:
+  - interval: 30s
+    port: metrics
+  selector:
+    matchLabels:
+      k8s-app: nginx-ingress
+  namespaceSelector:
+    matchNames:
+    - nginx-ingress
