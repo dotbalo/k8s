@@ -1,0 +1,15 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: canary-v1
+  namespace: canary-production
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  rules:
+  - host: canary.com
+    http:
+      paths:
+      - backend:
+          serviceName: canary-v1
+          servicePort: 8080
