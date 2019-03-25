@@ -1,0 +1,39 @@
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: redis-exporter
+  namespace: monitoring
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        k8s-app: redis-exporter
+    spec:
+      containers:
+      - name: redis-exporter
+        image: dotbalo/redis_exporter:latest
+        env:
+         - name: REDIS_ADDR
+           value: redis-cluster-0.redis-cluster.public-service.svc:6379,redis-cluster-1.redis-cluster.public-service.svc:6379,redis-cluster-2.redis-cluster.public-service.svc:6379,redis-cluster-3.redis-cluster.public-service.svc:6379,redis-cluster-4.redis-cluster.public-service.svc:6379,redis-cluster-5.redis-cluster.public-service.svc:6379
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9121
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-exporter
+  namespace: monitoring
+  labels:
+    k8s-app: redis-exporter
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    k8s-app: redis-exporter
+  ports:
+  - name: api
+    port: 9121
+    protocol: TCP

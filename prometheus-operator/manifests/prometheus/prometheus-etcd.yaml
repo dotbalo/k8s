@@ -20,12 +20,12 @@ metadata:
     k8s-app: etcd
 subsets:
 - addresses:
-  - ip: 192.168.20.20
-    nodeName: k8s-master01
-  - ip: 192.168.20.21
-    nodeName: k8s-master02
-  - ip: 192.168.20.22
-    nodeName: k8s-master03
+  - ip: 10.120.116.241
+    nodeName: k8s-1.novalocal
+  - ip: 10.120.116.239
+    nodeName: k8s-2.novalocal
+  - ip: 10.120.116.238
+    nodeName: k8s-3.novalocal
   ports:
   - name: api
     port: 2379
