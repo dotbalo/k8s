@@ -4,14 +4,14 @@ metadata:
   name: pv-es-2
 spec:
   capacity:
-    storage: 4Gi
+    storage: 10Gi
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   volumeMode: Filesystem
   persistentVolumeReclaimPolicy: Recycle
   storageClassName: "es-storage-class"
   nfs:
     # real share directory
-    path: /nfs/es/es2
+    path: /k8s-data/es/es2
     # nfs real ip
-    server: 192.168.2.2
+    server: 10.120.116.240

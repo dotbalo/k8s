@@ -59,7 +59,7 @@ metadata:
     addonmanager.kubernetes.io/mode: Reconcile
 spec:
   serviceName: elasticsearch-logging
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
       k8s-app: elasticsearch-logging
@@ -73,7 +73,7 @@ spec:
     spec:
       serviceAccountName: elasticsearch-logging
       containers:
-      - image: k8s.gcr.io/elasticsearch:v5.6.4 
+      - image: dotbalo/elasticsearch:v5.6.4 
         name: elasticsearch-logging
         resources:
           # need more cpu upon initialization, therefore burstable class
@@ -109,8 +109,8 @@ spec:
   - metadata:
       name: elasticsearch-logging
     spec:
-      accessModes: [ "ReadWriteMany" ]
+      accessModes: [ "ReadWriteOnce" ]
       storageClassName: "es-storage-class"
       resources:
         requests:
-          storage: 4Gi
+          storage: 10Gi
