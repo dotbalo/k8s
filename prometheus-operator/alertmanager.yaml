@@ -11,6 +11,10 @@ global:
   # HipChat告警配置
   # hipchat_auth_token: '123456789'
   # hipchat_auth_url: 'https://hipchat.foobar.org/'
+  # wechat
+  wechat_api_url: 'https://qyapi.weixin.qq.com/cgi-bin/'
+  wechat_api_secret: 'JJ'
+  wechat_api_corp_id: 'ww'
 
   # 告警通知模板
 templates:
@@ -27,7 +31,7 @@ route:
   # 如果一条告警通知已成功发送，且在间隔repeat_interval后，该告警仍然未被设置为resolved，则会再次发送该告警通知
   repeat_interval: 12h
   # 默认告警通知接收者，凡未被匹配进入各子路由节点的告警均被发送到此接收者
-  receiver: 'team-ops-mails'
+  receiver: 'wechat'
   # 上述route的配置会被传递给子路由节点，子路由节点进行重新配置才会被覆盖
 
   # 子路由树
@@ -36,20 +40,20 @@ route:
   # match_re和match均用于匹配labelkey为service,labelvalue分别为指定值的告警，被匹配到的告警会将通知发送到对应的receiver
   - match_re:
       service: ^(foo1|foo2|baz)$
-    receiver: 'team-ops-mails'
+    receiver: 'wechat'
     # 在带有service标签的告警同时有severity标签时，他可以有自己的子路由，同时具有severity != critical的告警则被发送给接收者team-ops-mails,对severity == critical的告警则被发送到对应的接收者即team-ops-pager
     routes:
     - match:
         severity: critical
-      receiver: 'team-ops-mails'
+      receiver: 'wechat'
   # 比如关于数据库服务的告警，如果子路由没有匹配到相应的owner标签，则都默认由team-DB-pager接收
   - match:
       service: database
-    receiver: 'team-ops-mails'
+    receiver: 'wechat'
   # 我们也可以先根据标签service:database将数据库服务告警过滤出来，然后进一步将所有同时带labelkey为database
   - match:
       severity: critical
-    receiver: 'team-ops-mails'
+    receiver: 'wechat'
 # 抑制规则，当出现critical告警时 忽略warning
 inhibit_rules:
 - source_match:
@@ -64,7 +68,15 @@ receivers:
 - name: 'team-ops-mails'
   email_configs:
   - to: 'dukuan@xxx.com'
-
+- name: 'wechat'
+  wechat_configs:
+  - send_resolved: true
+    corp_id: 'ww'
+    api_secret: 'JJ'
+    to_tag: '1'
+    agent_id: '1000002'
+    api_url: 'https://qyapi.weixin.qq.com/cgi-bin/'
+    message: '{{ template "wechat.default.message" . }}'
 #- name: 'team-X-pager'
 #  email_configs:
 #  - to: 'team-X+alerts-critical@example.org'
