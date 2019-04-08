@@ -1,0 +1,19 @@
+cluster.name: ${CLUSTER_NAME}
+
+
+path.data: /usr/share/elasticsearch/data
+
+network.host: 0.0.0.0
+
+index.analysis.analyzer.default.type: ik
+
+node.name: ${NODE_NAME}
+node.master: true
+node.data: true
+
+discovery.zen.minimum_master_nodes: ${MINIMUM_MASTER_NODES}
+
+xpack.security.enabled: false
+xpack.monitoring.enabled: false
+discovery.zen.ping.unicast.hosts: ["es-cluster-0.elasticsearch", "es-cluster-1.elasticsearch", "es-cluster-2.elasticsearch"] 
+
