@@ -1,0 +1,200 @@
+groups:
+- name: elastic-rules.rule
+  rules:
+  - alert: ElasticSearchCpuCritical
+    expr: es_cpu_percentage > 95
+    for: 3m
+    labels:
+      severity: critical
+    annotations:
+      description: '{{$labels.instance}} reports critical cpu usage. Please verify
+        workload, or add another node to the cluster '
+      summary: Critical CPU usage on {{$labels.instance}}
+  - alert: ElasticSearchStatusCritical
+    expr: es_status > 1
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      description: '{{$labels.instance}} reports critical status of a ElasticSearch
+        cluster {{$labels.cluster}}. Please check additional metrics or logs.'
+      summary: Critical cluster status of {{$labels.cluster}} on {{$labels.instance}}
+  - alert: ElasticSearchStatusWarning
+    expr: es_status == 1
+    for: 30m
+    labels:
+      severity: warning
+    annotations:
+      description: '{{$labels.instance}} reports non-healthy status of ElasticSearch
+        cluster {{$labels.cluster}}. Please check additional metrics or logs to find
+        a root cause'
+      summary: NonHealthy cluster status of {{$labels.cluster}} on {{$labels.instance}}
+  - alert: ElasticSearchUnassigedShards
+    expr: es_unassigned_shards > 0
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      description: There are unassigned shards for more than 3 minutes in {{$labels.cluster}}
+        on node {{$labels.instance}}. Please check cluster performance
+      summary: Unassigned shards on {{$labels.cluster}}
+  - alert: ElasticSearchActiveShardsPercentage
+    expr: es_shards_active_percentage < 100
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      description: Some shards ({{$value}}%) shards are inactive on {{$labels.cluster}}
+        for more than 3 minutes. Results from those shards are unavailable in returned
+        results.
+      summary: Non-active shards on {{$labels.cluster}}
+  - alert: ElasticSearchTooManyIndexFailures
+    expr: delta(es_indexing_failed_count[1m]) > 0
+    labels:
+      severity: warning
+    annotations:
+      description: There are documents indexing failures on node {{$labels.instance}}.
+        Please check logs to get more details.
+      summary: Indexing failures on {{$labels.instance}}
+  - alert: ElasticSearchIndexIsThrootled
+    expr: es_indexng_isthrottled > 0
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      description: Index {{$labels.index}} is throttled for more than 10minutes. Some
+        documents can be missing from returned results.
+      summary: Index {{$labels.index}} throttled for more than 10 minutes
+  - alert: ElasticSearchIndexUnassignedShards
+    expr: es_index_unassigned_shards > 0
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      description: Unassigned shards on index {{$labels.index}} from {{$labels.cluster}}
+        for more than 3 minutes
+      summary: Unassigned shards on {{$labels.index}} at {{$labels.cluster}}
+  - alert: ElasticSearchJvmMemoryPercent
+    expr: es_jvm_memory_heap_used_percen > 95
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      description: '{{$labels.instance}} reports high memory consumption for more
+        than 1 minute. Please check logs for more details'
+      summary: High JVM memory consumption on ES node {{$labels.instance}}
+  - alert: ElasticSearchClusterAllocationDisabled
+    expr: es_cluster_settings{cluster_routing_allocation_enable="none"} > 0
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      description: '{{$labels.instance}} reports that cluster allocation has been
+        disabled for {{$labels.cluster}}. Some documents can be missing from reported
+        results.'
+      summary: Cluster allocation disabled on cluster {{$labels.cluster}}
+  - alert: ElasticSearchClusterRebalanceDisabled
+    expr: es_cluster_settings{cluster_routing_rebalance_enable="none"} > 0
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      description: '{{$labels.instance}} reports that cluster rebalance has been disabled
+        on {{$labels.cluster}}. Some documents can be missing from reported results.'
+      summary: Cluster rebalance disabled on cluster {{$labels.cluster}}
+  - alert: ElasticSearchClusterAllocationDisabledPersistently
+    expr: es_cluster_persistent_settings{cluster_routing_allocation_enable="none"}
+      > 0
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      description: '{{$labels.instance}} reports that cluster allocation has been
+        disabled persistently for {{$labels.cluster}}. Some documents can be missing
+        from reported results and restart will not help.'
+      summary: Cluster allocation disabled on cluster {{$labels.cluster}}
+  - alert: ElasticSearchClusterRebalanceDisabledPersistently
+    expr: es_cluster_persistent_settings{cluster_routing_rebalance_enable="none"}
+      > 0
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      description: '{{$labels.instance}} reports that cluster rebalance has been disabled
+        on {{$labels.cluster}}. Some documents can be missing from reported results
+        and restart will not help.'
+      summary: Cluster rebalance disabled on cluster {{$labels.cluster}}
+  - alert: ElasticSearchClusterReadOnly
+    expr: es_cluster_settings{cluster_blocks_read_only="true"} > 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      description: '{{$labels.instance}} reports that cluster {{$labels.cluster}}
+        is in read-only mode. New documents will be rejected.'
+      summary: Cluster {{$labels.cluster}} is in RO mode
+  - alert: ElasticSearchClusterReadOnlyPersistently
+    expr: es_cluster_persistent_settings{cluster_blocks_read_only="true"} > 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      description: '{{$labels.instance}} reports that cluster {{$labels.cluster}}
+        is in read-only mode'
+      summary: Cluster {{$labels.cluster}} is read-only
+  - alert: ElasticDifferentVersion
+    expr: count(sum(es_prometheus_version) BY (pluginVersion, cluster)) BY (cluster)
+      > 1
+    for: 5d
+    labels:
+      severity: warning
+    annotations:
+      description: Cluster {{$labels.cluster}} reports inconsistent versions of ES
+        plugin
+      summary: Cluster {{$labels.cluster}} is inconsistent
+  - alert: ElasticIngestionFailed
+    expr: delta(es_ingest_total_failed_count[1m]) > 0
+    labels:
+      severity: warning
+    annotations:
+      description: Node {{$labels.instance}} reports failed ingestions. Some documents
+        were lost
+      summary: Node {{$labels.instance}} ingestion failed
+  - alert: ElasticNoSpaceWithin24h
+    expr: predict_linear(es_fs_free_bytes[1h], 24 * 3600) < 0
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      description: Elasticsearch reports that space on {{ $labels.node }}({{ $labels.instance
+        }}) will run within 24h. Please check disk usage on that host
+      summary: Elasticsearch {{ $labels.node }} at {{ $labels.cluster }} will be out
+        of disk space within 24h
+  - alert: ElasticNoAvailableSpace
+    expr: es_fs_path_free_bytes * 100 / es_fs_path_total_bytes < 10
+    for: 10m
+    labels:
+      severity: critical
+    annotations:
+      description: Elasticsearch reports that there  are only {{ $value }}% left on
+        {{ $labels.path }} at {{$labels.instance}}. Please check it
+      summary: No Available space on {{$labels.instance}}
+  - alert: ElasticCircuitEnabled
+    expr: delta(es_breaker_tripped[1m]) > 0
+    labels:
+      severity: critical
+    annotations:
+      description: Elasticsearch circuit breaker {{ $labels.circuit_name }} was enabled
+        within last minute on {{$labels.node}} ({{$labels.instance}}). Looks like
+        high memory pressure on this host ans some data were discarded.
+      summary: Circuit breaker {{ $labels.circuit_name}} enabled on {{$labels.node}}
+  - alert: ElasticThreadpoolRejected
+    expr: delta(es_threadpool_rejected[1m]) > 0
+    labels:
+      severity: warning
+    annotations:
+      description: Elasticsearch threadpool {{ $labels.threadpool }} rejected {{ $value
+        }} tasks within last minute. Some jobs failed and never will be repeated,
+        it could be a high CPU pressure or I/O errors. Please check node and it's
+        state
+      summary: Threadpool tasks rejected {{ $labels.threadpool}} at {{$labels.node}}
