@@ -11,7 +11,7 @@ data:
     fi
   config.toml: |
     concurrent = 10
-    check_interval = 30
+    check_interval = 3
     log_level = "info"
     listen_address = '[::]:9252'
   configure: |
@@ -61,7 +61,7 @@ data:
     # Start the runner
     /entrypoint run --user=gitlab-runner \
       --working-directory=/home/gitlab-runner
-  kubernetes.volumes: "\n[[runners.kubernetes.volumes.pvc]]\n  mount_path = \"/builds/\"\n
+  kubernetes.volumes: "\n[[runners.kubernetes.volumes.pvc]]\n  mount_path = \"/cache\"\n
     \ name = \"gitrunner-workspace\"\n  read_only = false\n  \n"
   register-the-runner: "#!/bin/bash\nMAX_REGISTER_ATTEMPTS=30\n\nfor i in $(seq
     1 \"${MAX_REGISTER_ATTEMPTS}\"); do\n  echo \"Registration attempt ${i} of ${MAX_REGISTER_ATTEMPTS}\"\n
