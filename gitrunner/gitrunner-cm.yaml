@@ -1,0 +1,91 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  data:
+    check-live: |
+      #!/bin/bash
+      if /usr/bin/pgrep -f .*register-the-runner; then
+        exit 0
+      elif /usr/bin/pgrep gitlab.*runner; then
+        exit 0
+      else
+        exit 1
+      fi
+    config.toml: |
+      concurrent = 10
+      check_interval = 0
+      log_level = "info"
+      listen_address = '[::]:9252'
+    configure: |
+      set -e
+      cp /init-secrets/* /secrets
+    entrypoint: |
+      #!/bin/bash
+      set -e
+      mkdir -p /home/gitlab-runner/.gitlab-runner/
+      cp /scripts/config.toml /home/gitlab-runner/.gitlab-runner/
+
+      # Register the runner
+      if [[ -f /secrets/accesskey && -f /secrets/secretkey ]]; then
+        export CACHE_S3_ACCESS_KEY=$(cat /secrets/accesskey)
+        export CACHE_S3_SECRET_KEY=$(cat /secrets/secretkey)
+      fi
+
+      if [[ -f /secrets/gcs-applicaton-credentials-file ]]; then
+        export GOOGLE_APPLICATION_CREDENTIALS="/secrets/gcs-applicaton-credentials-file"
+      else
+        if [[ -f /secrets/gcs-access-id && -f /secrets/gcs-private-key ]]; then
+          export CACHE_GCS_ACCESS_ID=$(cat /secrets/gcs-access-id)
+          # echo -e used to make private key multiline (in google json auth key private key is oneline with \n)
+          export CACHE_GCS_PRIVATE_KEY=$(echo -e $(cat /secrets/gcs-private-key))
+        fi
+      fi
+
+      if [[ -f /secrets/runner-registration-token ]]; then
+        export REGISTRATION_TOKEN=$(cat /secrets/runner-registration-token)
+      fi
+
+      if [[ -f /secrets/runner-token ]]; then
+        export CI_SERVER_TOKEN=$(cat /secrets/runner-token)
+      fi
+
+      if ! sh /scripts/register-the-runner; then
+        exit 1
+      fi
+
+      # Temporary workaround until https://gitlab.com/gitlab-org/gitlab-runner/issues/4228
+      # is merged
+      sed -n '30,$p' /home/gitlab-runner/.gitlab-runner/config.toml >> /home/gitlab-runner/custom_commands
+      sed -e '30,$d' -i /home/gitlab-runner/.gitlab-runner/config.toml
+      cat /scripts/kubernetes.volumes | sed -e '1d' | sed '1,$s/^/      /' >> /home/gitlab-runner/.gitlab-runner/config.toml
+      cat /home/gitlab-runner/custom_commands >> /home/gitlab-runner/.gitlab-runner/config.toml
+
+      # Start the runner
+      /entrypoint run --user=gitlab-runner \
+        --working-directory=/home/gitlab-runner
+    kubernetes.volumes: "\n[[runners.kubernetes.volumes.pvc]]\n  mount_path = \"/cache/\"\n
+      \ name = \"gitrunner-workspace\"\n  read_only = false\n  \n[[runners.kubernetes.volumes.secret]]\n
+      \ mount_path = \"/mnt\"\n  name = \"limit-ns-kubeconfig\"\n  read_only = true\n
+      \ \n"
+    register-the-runner: "#!/bin/bash\nMAX_REGISTER_ATTEMPTS=30\n\nfor i in $(seq
+      1 \"${MAX_REGISTER_ATTEMPTS}\"); do\n  echo \"Registration attempt ${i} of ${MAX_REGISTER_ATTEMPTS}\"\n
+      \ /entrypoint register \\\n    --non-interactive\n\n  retval=$?\n\n  if [ ${retval}
+      = 0 ]; then\n    break\n  elif [ ${i} = ${MAX_REGISTER_ATTEMPTS} ]; then\n    exit
+      1\n  fi\n\n  sleep 5 \ndone\n\nexit 0\n"
+  kind: ConfigMap
+  metadata:
+    creationTimestamp: "2019-08-14T05:40:29Z"
+    labels:
+      app: gitrunner-gitlab-runner
+      chart: gitlab-runner-0.8.0-beta
+      heritage: Tiller
+      release: gitrunner
+    name: gitrunner-gitlab-runner
+    namespace: default
+    resourceVersion: "19191198"
+    selfLink: /api/v1/namespaces/default/configmaps/gitrunner-gitlab-runner
+    uid: 06a04ee7-be56-11e9-bf75-f80f41f27da1
+kind: List
+metadata:
+  resourceVersion: ""
+  selfLink: ""
