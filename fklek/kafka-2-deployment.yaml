@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-2-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: kafka-2
+  template:
+    metadata:
+      labels:
+        component: kafka-2
+    spec:
+      containers:
+      - name: kafka-2 
+        image: dotbalo/kafka_k8s:v1
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        ports:
+          - containerPort: 9092
+
+        env:
+          - name: MY_POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: KAFKA_ADVERTISED_PORT
+            value: "9092"
+          - name: KAFKA_ZOOKEEPER_CONNECT
+            value: zk-0.zk-headless:2181,zk-1.zk-headless:2181,zk-2.zk-headless:2181
+          - name: KAFKA_ADVERTISED_PORT
+            value: "9092"
+          - name: KAFKA_ADVERTISED_HOST_NAME
+            value: $(MY_POD_IP)
+        tty: true
+        livenessProbe:
+          exec:
+            command:
+              - /opt/check.sh
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          exec:
+            command:
+              - /opt/check.sh
+          initialDelaySeconds: 30
+          periodSeconds: 5
+       
+      imagePullSecrets:
+        - name: regcred
+      

@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: filebeatconf
+data:
+  filebeat.yml: |-
+    filebeat.prospectors:
+    - input_type: log
+      paths:
+        - /data/log/*/*.log
+      document_type: "logging"
+      tail_files: true
+      fields:
+        pod_name: '${pod_name}'
+        POD_IP: '${POD_IP}'
+        type: 'logging'
+    
+    output.kafka:
+      hosts: ["kafka-1-ip-service.logging:9092","kafka-2-ip-service.logging:9092","kafka-3-ip-service.logging:9092"]
+      topic: "logging"
+      keep_alive: 30s
