@@ -1,0 +1,117 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  labels:
+    app: app
+    env: release
+spec:
+  selector:
+    matchLabels:
+      app: app
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  # minReadySeconds: 30
+  template:
+    metadata:
+      labels:
+        app: app
+    spec:
+      nodeSelector:
+         kubernetes.io/hostname: k8s-node02
+      containers:
+        - name: filebeat                        
+          image: elastic/filebeat:7.4.2
+          resources:
+            requests:
+              memory: "100Mi"
+              cpu: "10m"
+            limits:
+              cpu: "200m"
+              memory: "300Mi"
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: podIp
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+            - name: podName
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: podNamespace
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: podDeployName
+              value: app
+            - name: TZ
+              value: "Asia/Shanghai"
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - name: logpath
+              mountPath: /data/log/app/
+            - name: filebeatconf
+              mountPath: /usr/share/filebeat/filebeat.yml 
+              subPath: usr/share/filebeat/filebeat.yml
+        - name: app
+          image: alpine:3.6 
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: logpath
+              mountPath: /home/tomcat/target/
+            - name: tz-config
+              mountPath: /etc/localtime
+            - mountPath: /usr/share/zoneinfo/Asia/Shanghai
+              name: tz-config
+            - mountPath: /etc/timezone
+              name: timezone
+          env:
+            - name: TZ
+              value: "Asia/Shanghai"
+            - name: LANG
+              value: C.UTF-8
+            - name: LC_ALL
+              value: C.UTF-8
+            - name: ENV
+              value: k8srelease
+            - name: XMS
+              value: "2048m"
+            - name: XMX
+              value: "2048m"
+            - name: MEMORY_LIMIT
+              valueFrom:
+                resourceFieldRef:
+                  resource: requests.memory
+                  divisor: 1Mi
+          command:
+            - sh
+            - -c
+            - sleep 360000
+          ports:
+            - containerPort: 8080
+              name: tomcat
+      volumes:
+        - name: tz-config
+          hostPath:
+            path: /usr/share/zoneinfo/Asia/Shanghai
+        - hostPath:
+            path: /etc/timezone
+            type: ""
+          name: timezone
+        - name: logpath
+          emptyDir: {}
+        - name: filebeatconf
+          configMap:
+            name: filebeatconf
+            items:
+              - key: filebeat.yml
+                path: usr/share/filebeat/filebeat.yml

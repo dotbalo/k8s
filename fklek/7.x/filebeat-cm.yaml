@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: filebeatconf
+data:
+  filebeat.yml: |-
+    filebeat.inputs:
+    - input_type: log
+      paths:
+        - /data/log/*/*.log
+      tail_files: true
+      fields:
+        pod_name: '${podName}'
+        pod_ip: '${podIp}'
+        pod_deploy_name: '${podDeployName}'
+        pod_namespace: '${podNamespace}'
+      tags: [test-filebeat] 
+    output.kafka:
+      hosts: ["kafka:9092"]
+      topic: "test-filebeat"
+      codec.json:
+        pretty: false
+      keep_alive: 30s

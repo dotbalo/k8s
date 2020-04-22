@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: filebeatconf
+data:
+  filebeat.yml: |-
+    filebeat.inputs:
+    - input_type: log
+      paths:
+        - /data/log/*/*/*.log
+      tail_files: true
+      # fields_under_root: true # 将fields[pod_name] 变成[pod_name]
+      fields:
+        pod_name: '${podName}'
+        pod_ip: '${podIp}'
+        pod_deploy_name: '${podDeployName}'
+        pod_namespace: '${podNamespace}'
+      tags: [test-filebeat] 
+      #排除空行
+      exclude_lines: ['^$']
+      #java多行日志合并
+      multiline:
+        pattern: '^\d{1,2}:\d{1,2}:\d{1,2}\.\d{3}'
+        negate: true
+        match: after
+    output.kafka:
+      hosts: ["kafka:9092"]
+      topic: "test-filebeat"
+      codec.json:
+        pretty: false
+      keep_alive: 30s
