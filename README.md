@@ -7,3 +7,7 @@
     Install Redis Cluster: https://github.com/dotbalo/k8s/tree/master/redis/k8s-redis-cluster
     Install GitLab: https://www.cnblogs.com/dukuan/p/10036489.html
 ````
+
+
+# 超全面、超详细的Kubernetes视频教程，基于最新的1.19
+https://ke.qq.com/course/2738602?tuin=2b5e11f2
