@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: filebeat                        
-          image: 10.120.116.178/public-service/filebeat:6.4.3 
+          image: elastic/filebeat:6.4.3 
           resources:
             requests:
               memory: "100Mi"
@@ -109,8 +109,6 @@ spec:
 #            initialDelaySeconds: 180
 #            timeoutSeconds: 2
 #            failureThreshold: 2
-      imagePullSecrets:
-        - name: myregistrykey
       volumes:
         - name: tz-config
           hostPath:
