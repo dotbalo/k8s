@@ -11,6 +11,8 @@ data:
     rabbitmq.conf: |
       loopback_users.guest = false
 
+      default_user = RABBITMQ_USER
+      default_pass = RABBITMQ_PASS
       ## Clustering
       cluster_formation.peer_discovery_backend = rabbit_peer_discovery_k8s
       cluster_formation.k8s.host = kubernetes.default.svc.cluster.local
