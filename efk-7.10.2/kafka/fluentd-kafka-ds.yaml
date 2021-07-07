@@ -69,7 +69,7 @@ spec:
       serviceAccountName: fluentd-es
       containers:
       - name: fluentd-es
-        image: registry.cn-beijing.aliyuncs.com/dotbalo/fluentd:v3.1.0
+        image: registry.cn-beijing.aliyuncs.com/dotbalo/fluentd-kafka:v3.1.0
         env:
         - name: FLUENTD_ARGS
           value: --no-supervisor -q

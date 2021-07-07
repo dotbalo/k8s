@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  labels:
+    app: app
+    env: release
+spec:
+  selector:
+    matchLabels:
+      app: app
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  # minReadySeconds: 30
+  template:
+    metadata:
+      labels:
+        app: app
+    spec:
+      containers:
+        - name: filebeat                        
+          image: registry.cn-beijing.aliyuncs.com/dotbalo/filebeat:7.10.2 
+          resources:
+            requests:
+              memory: "100Mi"
+              cpu: "10m"
+            limits:
+              cpu: "200m"
+              memory: "300Mi"
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: podIp
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+            - name: podName
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: podNamespace
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: podDeployName
+              value: app
+            - name: TZ
+              value: "Asia/Shanghai"
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - name: logpath
+              mountPath: /data/log/app/
+            - name: filebeatconf
+              mountPath: /usr/share/filebeat/filebeat.yml 
+              subPath: usr/share/filebeat/filebeat.yml
+        - name: app
+          image: registry.cn-beijing.aliyuncs.com/dotbalo/alpine:3.6 
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: logpath
+              mountPath: /opt/
+          env:
+            - name: TZ
+              value: "Asia/Shanghai"
+            - name: LANG
+              value: C.UTF-8
+            - name: LC_ALL
+              value: C.UTF-8
+          command:
+            - sh
+            - -c
+            - while true; do date >> /opt/date.log; sleep 2;  done 
+      volumes:
+        - name: logpath
+          emptyDir: {}
+        - name: filebeatconf
+          configMap:
+            name: filebeatconf
+            items:
+              - key: filebeat.yml
+                path: usr/share/filebeat/filebeat.yml

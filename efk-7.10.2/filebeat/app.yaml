@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  labels:
+    app: app
+    env: release
+spec:
+  selector:
+    matchLabels:
+      app: app
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  # minReadySeconds: 30
+  template:
+    metadata:
+      labels:
+        app: app
+    spec:
+      nodeSelector:
+         fluentd: "true"
+      containers:
+        - name: app
+          image: registry.cn-beijing.aliyuncs.com/dotbalo/alpine:3.6 
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+          - name: logpath
+            mountPath: /opt/
+          env:
+            - name: TZ
+              value: "Asia/Shanghai"
+            - name: LANG
+              value: C.UTF-8
+            - name: LC_ALL
+              value: C.UTF-8
+          command:
+            - sh
+            - -c
+            - while true; do date >> /opt/date.log; sleep 2;  done  
+      volumes:
+        - name: logpath
+          emptyDir: {}
