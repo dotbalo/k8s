@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-configmap
+data:
+  logstash.yml: |
+    http.host: "0.0.0.0"
+    path.config: /usr/share/logstash/pipeline
+  logstash.conf: |
+    # all input will come from filebeat, no local logs
+    input {
+      kafka {
+              enable_auto_commit => true
+              auto_commit_interval_ms => "1000"
+              bootstrap_servers => "kafka:9092"
+              topics => ["filebeat-sidecar"]
+              type => ["filebeat-sidecar"]
+              codec => json
+          }
+    }
+
+    output {
+       stdout{ codec=>rubydebug}
+       if [type] == "filebeat-sidecar"{
+           elasticsearch {
+             hosts => ["elasticsearch-logging-0.elasticsearch-logging:9200","elasticsearch-logging-1.elasticsearch-logging:9200"]
+             index => "filebeat-%{+YYYY.MM.dd}"
+          }
+       } else{
+          elasticsearch {
+             hosts => ["elasticsearch-logging-0.elasticsearch-logging:9200","elasticsearch-logging-1.elasticsearch-logging:9200"]
+             index => "other-input-%{+YYYY.MM.dd}"
+          }
+       }
+    }

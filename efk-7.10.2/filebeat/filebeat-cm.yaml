@@ -14,8 +14,9 @@ data:
         pod_ip: '${podIp}'
         pod_deploy_name: '${podDeployName}'
         pod_namespace: '${podNamespace}'
-    setup.template.name: "filebeat-sidecar"
-    setup.template.pattern: "filebeat-sidecar-*"
-    output.elasticsearch:
-      hosts: ["es-filebeat.logging:9200"]
-      index: "filebeat-sidecar-%{+yyyy.MM}"
+    output.kafka:
+      hosts: ["kafka:9092"]
+      topic: "filebeat-sidecar"
+      codec.json:
+        pretty: false
+      keep_alive: 30s
