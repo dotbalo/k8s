@@ -1,0 +1,16 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: autoscale-helloworld-go
+  namespace: default
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/target: "2"
+    spec:
+      containers:
+        - image: registry.cn-beijing.aliyuncs.com/dotbalo/autoscale-go:0.1 
+          env:
+            - name: TARGET
+              value: "Go Sample v1"

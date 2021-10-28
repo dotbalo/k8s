@@ -1,0 +1,35 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  values:
+    global:
+      proxy:
+        autoInject: disabled
+      useMCP: false
+      # The third-party-jwt is not enabled on all k8s.
+      # See: https://istio.io/docs/ops/best-practices/security/#configure-third-party-service-account-tokens
+      jwtPolicy: third-party-jwt 
+
+  addonComponents:
+    pilot:
+      enabled: true
+
+  components:
+    ingressGateways:
+      - name: istio-ingressgateway
+        enabled: true
+        k8s:
+          service:
+            type: NodePort
+            ports:
+            - port: 15020
+              nodePort: 30020
+              name: status-port
+            - port: 80
+              nodePort: 30080
+              name: http2
+              targetPort: 8080
+            - port: 443
+              nodePort: 30443
+              targetPort: 8443
+              name: https
