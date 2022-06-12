@@ -88,12 +88,12 @@ spec:
           livenessProbe:
             tcpSocket:
               port: transport
-            initialDelaySeconds: 5
+            initialDelaySeconds: 30
             timeoutSeconds: 10
           readinessProbe:
             tcpSocket:
               port: transport
-            initialDelaySeconds: 5
+            initialDelaySeconds: 30
             timeoutSeconds: 10
           volumeMounts:
             - name: elasticsearch-logging
