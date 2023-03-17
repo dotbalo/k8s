@@ -61,7 +61,7 @@ spec:
             - --config.file=/etc/config/alertmanager.yml
             - --storage.path={{ .Values.alertmanager.persistentVolume.mountPath }}
           {{- if .Values.alertmanager.statefulSet.headless.enableMeshPeer }}
-            - --cluster.advertise-address=$(POD_IP):6783
+            - --cluster.advertise-address=[$(POD_IP)]:6783
             - --cluster.listen-address=0.0.0.0:6783
           {{- range $n := until (.Values.alertmanager.replicaCount | int) }}
             - --cluster.peer={{ template "prometheus.alertmanager.fullname" $ }}-{{ $n }}.{{ template "prometheus.alertmanager.fullname" $ }}-headless:6783
@@ -117,7 +117,7 @@ spec:
         {{- end }}
     {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
-      {{ toYaml .Values.imagePullSecrets | indent 2 }}
+{{ toYaml .Values.imagePullSecrets | indent 8 }}
     {{- end }}
     {{- if .Values.alertmanager.nodeSelector }}
       nodeSelector:
@@ -144,6 +144,9 @@ spec:
         - name: {{ .name }}
           secret:
             secretName: {{ .secretName }}
+            {{- with .optional }}
+            optional: {{ . }}
+            {{- end }}
       {{- end }}
 {{- if .Values.alertmanager.persistentVolume.enabled }}
   volumeClaimTemplates:

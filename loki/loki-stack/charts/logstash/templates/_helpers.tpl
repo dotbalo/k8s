@@ -20,12 +20,8 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end -}}
 
 {{/*
-Return the appropriate apiVersion for statefulset.
+Use the fullname if the serviceAccount value is not set
 */}}
-{{- define "logstash.statefulset.apiVersion" -}}
-{{- if semverCompare "<1.9-0" .Capabilities.KubeVersion.GitVersion -}}
-{{- print "apps/v1beta2" -}}
-{{- else -}}
-{{- print "apps/v1" -}}
-{{- end -}}
+{{- define "logstash.serviceAccount" -}}
+{{- .Values.rbac.serviceAccountName | default (include "logstash.fullname" .) -}}
 {{- end -}}

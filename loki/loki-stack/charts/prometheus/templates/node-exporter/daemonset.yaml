@@ -45,6 +45,9 @@ spec:
           args:
             - --path.procfs=/host/proc
             - --path.sysfs=/host/sys
+          {{- if .Values.nodeExporter.hostRootfs }}
+            - --path.rootfs=/host/root
+          {{- end }}
           {{- if .Values.nodeExporter.hostNetwork }}
             - --web.listen-address=:{{ .Values.nodeExporter.service.hostPort }}
           {{- end }}
@@ -72,6 +75,12 @@ spec:
             - name: sys
               mountPath: /host/sys
               readOnly: true
+          {{- if .Values.nodeExporter.hostRootfs }}
+            - name: root
+              mountPath: /host/root
+              mountPropagation: HostToContainer
+              readOnly: true
+          {{- end }}
           {{- range .Values.nodeExporter.extraHostPathMounts }}
             - name: {{ .name }}
               mountPath: {{ .mountPath }}
@@ -87,7 +96,7 @@ spec:
           {{- end }}
     {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
-      {{ toYaml .Values.imagePullSecrets | indent 2 }}
+{{ toYaml .Values.imagePullSecrets | indent 8 }}
     {{- end }}
     {{- if .Values.nodeExporter.hostNetwork }}
       hostNetwork: true
@@ -103,6 +112,10 @@ spec:
       nodeSelector:
 {{ toYaml .Values.nodeExporter.nodeSelector | indent 8 }}
     {{- end }}
+    {{- with .Values.nodeExporter.dnsConfig }}
+      dnsConfig:
+{{ toYaml . | indent 8 }}
+    {{- end }}
     {{- if .Values.nodeExporter.securityContext }}
       securityContext:
 {{ toYaml .Values.nodeExporter.securityContext | indent 8 }}
@@ -114,6 +127,11 @@ spec:
         - name: sys
           hostPath:
             path: /sys
+      {{- if .Values.nodeExporter.hostRootfs }}
+        - name: root
+          hostPath:
+            path: /
+      {{- end }}
       {{- range .Values.nodeExporter.extraHostPathMounts }}
         - name: {{ .name }}
           hostPath:

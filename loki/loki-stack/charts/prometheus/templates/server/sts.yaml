@@ -78,6 +78,7 @@ spec:
               readOnly: {{ .readOnly }}
           {{- end }}
         {{- end }}
+
         - name: {{ template "prometheus.name" . }}-{{ .Values.server.name }}
           image: "{{ .Values.server.image.repository }}:{{ .Values.server.image.tag }}"
           imagePullPolicy: "{{ .Values.server.image.pullPolicy }}"
@@ -86,11 +87,21 @@ spec:
 {{ toYaml .Values.server.env | indent 12}}
           {{- end }}
           args:
+        {{- if .Values.server.defaultFlagsOverride }}
+        {{ toYaml .Values.server.defaultFlagsOverride | nindent 12}}
+        {{- else }}
+          {{- if .Values.server.prefixURL }}
+            - --web.route-prefix={{ .Values.server.prefixURL }}
+          {{- end }}
           {{- if .Values.server.retention }}
             - --storage.tsdb.retention.time={{ .Values.server.retention }}
           {{- end }}
             - --config.file={{ .Values.server.configPath }}
+          {{- if .Values.server.storagePath }}
+            - --storage.tsdb.path={{ .Values.server.storagePath }}
+          {{- else }}
             - --storage.tsdb.path={{ .Values.server.persistentVolume.mountPath }}
+          {{- end }}
             - --web.console.libraries=/etc/prometheus/console_libraries
             - --web.console.templates=/etc/prometheus/consoles
           {{- range .Values.server.extraFlags }}
@@ -102,21 +113,37 @@ spec:
           {{- if .Values.server.baseURL }}
             - --web.external-url={{ .Values.server.baseURL }}
           {{- end }}
+        {{- end }}
           ports:
             - containerPort: 9090
+          {{- if .Values.server.hostPort }}
+              hostPort: {{ .Values.server.hostPort }}
+          {{- end }}
           readinessProbe:
+            {{- if not .Values.server.tcpSocketProbeEnabled }}
             httpGet:
               path: {{ .Values.server.prefixURL }}/-/ready
               port: 9090
+              scheme: {{ .Values.server.probeScheme }}
+            {{- else }}
+            tcpSocket:
+              port: 9090
+            {{- end }}
             initialDelaySeconds: {{ .Values.server.readinessProbeInitialDelay }}
             periodSeconds: {{ .Values.server.readinessProbePeriodSeconds }}
             timeoutSeconds: {{ .Values.server.readinessProbeTimeout }}
             failureThreshold: {{ .Values.server.readinessProbeFailureThreshold }}
             successThreshold: {{ .Values.server.readinessProbeSuccessThreshold }}
           livenessProbe:
+            {{- if not .Values.server.tcpSocketProbeEnabled }}
             httpGet:
               path: {{ .Values.server.prefixURL }}/-/healthy
               port: 9090
+              scheme: {{ .Values.server.probeScheme }}
+            {{- else }}
+            tcpSocket:
+              port: 9090
+            {{- end }}
             initialDelaySeconds: {{ .Values.server.livenessProbeInitialDelay }}
             periodSeconds: {{ .Values.server.livenessProbePeriodSeconds }}
             timeoutSeconds: {{ .Values.server.livenessProbeTimeout }}
@@ -151,12 +178,23 @@ spec:
           {{- if .Values.server.extraVolumeMounts }}
           {{ toYaml .Values.server.extraVolumeMounts | nindent 12 }}
           {{- end }}
-       {{- if .Values.server.sidecarContainers }}
-       {{- toYaml .Values.server.sidecarContainers | nindent 8 }}
-       {{- end }}
+    {{- if .Values.server.sidecarContainers }}
+      {{- range $name, $spec :=  .Values.server.sidecarContainers }}
+        - name: {{ $name }}
+          {{- if kindIs "string" $spec }}
+            {{- tpl $spec $ | nindent 10 }}
+          {{- else }}
+            {{- toYaml $spec | nindent 10 }}
+          {{- end }}
+      {{- end }}
+    {{- end }}
+      hostNetwork: {{ .Values.server.hostNetwork }}
+    {{- if .Values.server.dnsPolicy }}
+      dnsPolicy: {{ .Values.server.dnsPolicy }}
+    {{- end }}
     {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
-       {{ toYaml .Values.imagePullSecrets | indent 2 }}
+{{ toYaml .Values.imagePullSecrets | indent 8 }}
     {{- end }}
     {{- if .Values.server.nodeSelector }}
       nodeSelector:
@@ -165,6 +203,10 @@ spec:
     {{- if .Values.server.hostAliases }}
       hostAliases:
 {{ toYaml .Values.server.hostAliases | indent 8 }}
+    {{- end }}
+    {{- if .Values.server.dnsConfig }}
+      dnsConfig:
+{{ toYaml .Values.server.dnsConfig | indent 8 }}
     {{- end }}
     {{- if .Values.server.securityContext }}
       securityContext:
@@ -181,8 +223,13 @@ spec:
       terminationGracePeriodSeconds: {{ .Values.server.terminationGracePeriodSeconds }}
       volumes:
         - name: config-volume
+        {{- if empty .Values.server.configFromSecret }}
           configMap:
             name: {{ if .Values.server.configMapOverrideName }}{{ .Release.Name }}-{{ .Values.server.configMapOverrideName }}{{- else }}{{ template "prometheus.server.fullname" . }}{{- end }}
+        {{- else }}
+          secret:
+            secretName: {{ .Values.server.configFromSecret }}
+        {{- end }}
       {{- range .Values.server.extraHostPathMounts }}
         - name: {{ .name }}
           hostPath:
@@ -202,11 +249,17 @@ spec:
         - name: {{ .name }}
           secret:
             secretName: {{ .secretName }}
+            {{- with .optional }}
+            optional: {{ . }}
+            {{- end }}
       {{- end }}
       {{- range .Values.configmapReload.prometheus.extraConfigmapMounts }}
         - name: {{ .name }}
           configMap:
             name: {{ .configMap }}
+            {{- with .optional }}
+            optional: {{ . }}
+            {{- end }}
       {{- end }}
 {{- if .Values.server.extraVolumes }}
 {{ toYaml .Values.server.extraVolumes | indent 8}}

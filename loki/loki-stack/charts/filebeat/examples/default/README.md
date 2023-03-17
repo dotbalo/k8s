@@ -1,6 +1,6 @@
 # Default
 
-This example deploy Filebeat 7.8.1 using [default values][].
+This example deploy Filebeat 7.17.3 using [default values][].
 
 
 ## Usage
@@ -22,6 +22,6 @@ This example deploy Filebeat 7.8.1 using [default values][].
 You can also run [goss integration tests][] using `make test`
 
 
-[elasticsearch helm chart]: https://github.com/elastic/helm-charts/tree/7.8/elasticsearch/examples/default/
-[goss integration tests]: https://github.com/elastic/helm-charts/tree/7.8/filebeat/examples/default/test/goss.yaml
-[default values]: https://github.com/elastic/helm-charts/tree/7.8/filebeat/values.yaml
+[elasticsearch helm chart]: https://github.com/elastic/helm-charts/tree/7.17/elasticsearch/examples/default/
+[goss integration tests]: https://github.com/elastic/helm-charts/tree/7.17/filebeat/examples/default/test/goss.yaml
+[default values]: https://github.com/elastic/helm-charts/tree/7.17/filebeat/values.yaml
