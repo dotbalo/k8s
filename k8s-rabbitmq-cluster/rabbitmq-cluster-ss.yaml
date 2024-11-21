@@ -59,7 +59,7 @@ spec:
           value: rabbit@$(POD_NAME).rmq-cluster.$(POD_NAMESPACE).svc.cluster.local
         - name: RABBITMQ_CONFIG_FILE
           value: /var/lib/rabbitmq/rabbitmq.conf
-        image: registry.cn-beijing.aliyuncs.com/dotbalo/rabbitmq:3.7-management 
+        image: registry.cn-beijing.aliyuncs.com/dotbalo/rabbitmq:3.13.6-management-alpine
         imagePullPolicy: IfNotPresent
         livenessProbe:
           exec:
