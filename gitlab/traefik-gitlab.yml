@@ -1,4 +1,5 @@
-apiVersion: extensions/v1beta1
+#apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: gitlab
@@ -10,7 +11,10 @@ spec:
   - host: gitlab.xxx.net
     http:
       paths:
-      - backend:
-          serviceName: gitlab
-          servicePort: 80
-   
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: gitlab
+            port:
+              number: 80
